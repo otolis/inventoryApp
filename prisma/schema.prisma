@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MediaType {
+  VINYL    @map("vinyl")
+  CD       @map("cd")
+  CASSETTE @map("cassette")
+  DIGITAL  @map("digital")
+}
+
+model Album {
+  id          Int      @id @default(autoincrement())
+  title       String   @unique
+  genre       String
+  releaseDate DateTime @map("release_date")
+  image       String   @unique
+  createdAt   DateTime @map("created_at")
+  updatedAt   DateTime @map("updated_at")
+  format      Format[]
+  artist      Artist?  @relation(fields: [artistId], references: [id])
+  artistId    Int?
+  label       Label?   @relation(fields: [labelId], references: [id])
+  labelId     Int?
+
+  @@map("albums")
+}
+
+model Artist {
+  id        Int      @id @default(autoincrement())
+  firstName String   @unique @map("first_name")
+  lastName  String   @unique @map("last_name")
+  birthDate String   @map("birth_date")
+  deathDate String?  @map("death_date")
+  country   String
+  image     String   @unique
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  album     Album[]
+  label     Label?   @relation(fields: [labelId], references: [id])
+  labelId   Int?
+
+  @@map("artists")
+}
+
+model Format {
+  id        Int       @id @default(autoincrement())
+  type      MediaType
+  price     Float
+  stock     Int
+  barcode   String
+  image     String    @unique
+  createdAt DateTime  @map("created_at")
+  updatedAt DateTime  @map("updated_at")
+  album     Album?    @relation(fields: [albumId], references: [id])
+  albumId   Int?
+
+  @@map("formats")
+}
+
+model Label {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  founded   String
+  image     String   @unique
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  album     Album[]
+  artist    Artist[]
+
+  @@map("labels")
+}
